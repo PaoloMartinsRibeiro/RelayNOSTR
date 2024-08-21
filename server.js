@@ -104,7 +104,7 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     try {
       const parsedMessage = JSON.parse(message);
-      
+
       if (parsedMessage.kind === 1) {
         // Extraire les données du pixel de l'événement
         const { x, y, color } = JSON.parse(parsedMessage.content);
@@ -114,15 +114,15 @@ wss.on('connection', (ws) => {
         // Mettre à jour le pixel seulement si l'événement est plus récent
         if (!pixels[pixelKey] || eventTimestamp > pixels[pixelKey].created_at) {
           // Mettre à jour ou ajouter l'événement pixel
-          pixels[pixelKey] = parsedMessage;
-          
+          pixels[pixelKey] = { x, y, color, created_at: eventTimestamp };
+
           // Stocker l'événement dans le tableau des événements
           events.push(parsedMessage);
 
           // Diffuser l'événement à tous les clients
           wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-              client.send(JSON.stringify(parsedMessage));
+              client.send(JSON.stringify(pixels[pixelKey]));
             }
           });
         }
